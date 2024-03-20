@@ -16,6 +16,7 @@
 #include "world/WorldGenerators.h"
 #include "voxels/DefaultWorldGenerator.h"
 #include "voxels/FlatWorldGenerator.h"
+#include "network/network.h"
 #include "window/Window.h"
 #include "window/Events.h"
 #include "window/Camera.h"
@@ -62,6 +63,10 @@ Engine::Engine(EngineSettings& settings, EnginePaths* paths)
     audio::create_channel("ambient");
     audio::create_channel("ui");
 
+    if (network::initialize()) {
+        throw initialize_error("could not initialize network");
+    }
+
     auto resdir = paths->getResources();
     scripting::initialize(this);
 
@@ -80,6 +85,7 @@ Engine::Engine(EngineSettings& settings, EnginePaths* paths)
             assets.reset();
             scripting::close();
             Window::terminate();
+            network::terminate();
             throw initialize_error("could not to load assets");
         }
     }
