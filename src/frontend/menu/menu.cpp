@@ -271,6 +271,7 @@ void create_main_menu_panel(Engine* engine) {
 
     auto panel = menus::create_page(engine, "main", 400, 0.0f, 1);
     panel->add(guiutil::gotoButton(L"New World", "new-world", menu));
+    panel->add(guiutil::gotoButton(L"Join Server", "join-server", menu));
     panel->add(create_worlds_panel(engine));
     panel->add(guiutil::gotoButton(L"Settings", "settings", menu));
 
@@ -284,6 +285,7 @@ void create_main_menu_panel(Engine* engine) {
 void menus::create_menus(Engine* engine) {
     menus::generatorID = WorldGenerators::getDefaultGeneratorID();
     create_new_world_panel(engine);
+    create_join_server_panel(engine);
     create_settings_panel(engine);
     create_languages_panel(engine);
     create_main_menu_panel(engine);

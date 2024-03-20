@@ -24,6 +24,7 @@ ChunksStorage::ChunksStorage(Level* level)
 
 void ChunksStorage::store(std::shared_ptr<Chunk> chunk) {
 	chunksMap[glm::ivec2(chunk->x, chunk->z)] = chunk;
+    events->trigger(EVT_CHUNK_LOADED, chunk.get());
 }
 
 void ChunksStorage::remove(int32_t x, int32_t z) {
@@ -153,12 +154,20 @@ void ChunksStorage::save(){
 	}
 }
 
-void ChunksStorage::unloadUnused() {
+void ChunksStorage::unloadUnused(uint64_t maxDuration) {
+    uint64_t mcstotal = 0;
+
 	for (auto it = begin(); it != end();) {
+		timeutil::Timer timer;
 		if (it->second->uses == 0) {
             level->world->wfile->put(it->second.get());
 			events->trigger(EVT_CHUNK_HIDDEN, it->second.get());
             it = chunksMap.erase(it);
 		} else it++;
+        uint64_t mcs = timer.stop();
+        if (mcstotal + mcs > maxDuration * 1000) {
+            break;
+        }
+        mcstotal += mcs;
 	}
 } 

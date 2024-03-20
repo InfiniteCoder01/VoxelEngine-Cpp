@@ -19,7 +19,7 @@ Level::Level(World* world, const Content* content, EngineSettings& settings)
 	settings(settings)
 {
 	auto inv = std::make_shared<Inventory>(world->getNextInventoryId(), DEF_PLAYER_INVENTORY_SIZE);
-	auto player = spawnObject<Player>(this, glm::vec3(0, DEF_PLAYER_Y, 0), DEF_PLAYER_SPEED, inv, settings);
+	auto player = spawnObject<Player>(this, DEFAULT_PLAYER_NAME, glm::vec3(0, DEF_PLAYER_Y, 0), DEF_PLAYER_SPEED, inv, settings);
 
 	lighting = std::make_unique<Lighting>(content, player->chunksMatrix.get(), chunksStorage.get());
 
@@ -35,4 +35,9 @@ Level::~Level(){
 
 World* Level::getWorld() {
     return world.get();
+}
+
+void Level::removeObject(uint64_t id) {
+    if (id >= objects.size()) return;
+    objects.erase(objects.begin() + id);
 }

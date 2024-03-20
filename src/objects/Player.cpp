@@ -20,10 +20,11 @@ const float FLIGHT_SPEED_MUL = 4.0f;
 const float CHEAT_SPEED_MUL = 5.0f;
 const float JUMP_FORCE = 8.0f;
 
-Player::Player(Level* level, glm::vec3 position, float speed, std::shared_ptr<Inventory> inv, const EngineSettings& settings) :
+Player::Player(Level* level, const std::string& name, glm::vec3 position, float speed, std::shared_ptr<Inventory> inv, const EngineSettings& settings) :
     speed(speed),
     chosenSlot(0),
     inventory(inv),
+    name(name),
     camera(std::make_shared<Camera>(position, glm::radians(90.0f))),
     spCamera(std::make_shared<Camera>(position, glm::radians(90.0f))),
     tpCamera(std::make_shared<Camera>(position, glm::radians(90.0f))),
@@ -200,6 +201,8 @@ std::unique_ptr<dynamic::Map> Player::serialize() const {
     rotarr.put(cam.x);
     rotarr.put(cam.y);
 
+    root->put("name", name);
+
     auto& sparr = root->putList("spawnpoint");
     sparr.put(spawnpoint.x);
     sparr.put(spawnpoint.y);
@@ -223,6 +226,8 @@ void Player::deserialize(dynamic::Map *src) {
     auto rotarr = src->list("rotation");
     cam.x = rotarr->num(0);
     cam.y = rotarr->num(1);
+
+    src->str("name", name);
 
     if (src->has("spawnpoint")) {
         auto sparr = src->list("spawnpoint");

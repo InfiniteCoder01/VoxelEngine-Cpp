@@ -7,10 +7,15 @@ using std::chrono::duration_cast;
 using std::chrono::microseconds;
 
 timeutil::Timer::Timer() {
-    start = high_resolution_clock::now();
+    reset();
 }
-int64_t timeutil::Timer::stop() {
+
+uint64_t timeutil::Timer::stop() {
     return duration_cast<microseconds>(high_resolution_clock::now()-start).count();
+}
+
+void timeutil::Timer::reset() {
+    start = high_resolution_clock::now();
 }
 
 timeutil::ScopeLogTimer::ScopeLogTimer(long long id) : scopeid_(id) {}

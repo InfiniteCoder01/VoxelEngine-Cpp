@@ -16,6 +16,7 @@ LevelController::LevelController(EngineSettings& settings, Level* level)
 }
 
 void LevelController::update(float delta, bool input, bool pause) {
+    if (client) client->update();
     player->getPlayer()->radius = settings.chunks.loadDistance;
     player->update(delta, input, pause);
     for(auto obj : level->objects) {
@@ -23,7 +24,7 @@ void LevelController::update(float delta, bool input, bool pause) {
             player->loadChunks();
         }
     }
-    level->chunksStorage->unloadUnused();
+    level->chunksStorage->unloadUnused(settings.chunks.loadSpeed);
 
     // erease null pointers
     level->objects.erase(
@@ -45,9 +46,11 @@ void LevelController::update(float delta, bool input, bool pause) {
         }
         blocks->update(delta);
     }
+    if (server) server->update();
 }
 
 void LevelController::saveWorld() {
+    if (!level->world->wfile) return;
     std::cout << "-- writing world" << std::endl;
     scripting::on_world_save();
     level->getWorld()->write(level.get());

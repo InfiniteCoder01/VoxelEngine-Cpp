@@ -166,7 +166,7 @@ void create_content_panel(Engine* engine, LevelController* controller) {
     mainPanel->add(guiutil::backButton(menu));
 }
 
-void menus::create_pause_panel(Engine* engine, LevelController* controller) {
+void menus::create_pause_panel(Engine* engine, LevelController* controller, Level* level) {
     auto menu = engine->getGUI()->getMenu();
     auto panel = create_page(engine, "pause", 400, 0.0f, 1);
 
@@ -179,7 +179,19 @@ void menus::create_pause_panel(Engine* engine, LevelController* controller) {
     }));
     panel->add(guiutil::gotoButton(L"Settings", "settings", menu));
 
-    panel->add(create_button(L"Save and Quit to Menu", glm::vec4(10.f), glm::vec4(1), [=](GUI*){
+    if (!controller->server && !controller->client) {
+        panel->add(create_button(L"Open to LAN", glm::vec4(10.0f), glm::vec4(1), [=](GUI* gui) {
+            try {
+                controller->server = std::make_unique<ServerController>(level);
+            } catch (const std::wstring& error) {
+                guiutil::alert(gui, error);
+                return;
+            }
+            menu->reset();
+        }));
+    }
+ 
+    panel->add(create_button(controller->client ? L"Disconnect" : L"Save and Quit to Menu", glm::vec4(10.f), glm::vec4(1), [=](GUI*){
         // save world
         controller->saveWorld();
         // destroy LevelScreen and run quit callbacks

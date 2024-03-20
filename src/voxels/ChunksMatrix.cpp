@@ -20,6 +20,10 @@ ChunksMatrix::ChunksMatrix(Level* level, uint32_t w, uint32_t d, int32_t ox, int
 	chunksCount = 0;
 }
 
+ChunksMatrix::~ChunksMatrix() {
+    clear();
+}
+
 void ChunksMatrix::setCenter(int32_t x, int32_t z) {
 	int cx = floordiv(x, CHUNK_W);
 	int cz = floordiv(z, CHUNK_D);
@@ -42,9 +46,9 @@ void ChunksMatrix::translate(int32_t dx, int32_t dz) {
 			if (chunk == nullptr)
 				continue;
 			if (nx < 0 || nz < 0 || nx >= int(w) || nz >= int(d)){
-				events->trigger(EVT_CHUNK_HIDDEN, chunk.get());
                 chunk->uses--;
 				chunksCount--;
+				events->trigger(EVT_CHUNK_HIDDEN, chunk.get());
 				continue;
 			}
 			chunksSecond[nz * w + nx] = chunk;
@@ -103,6 +107,7 @@ bool ChunksMatrix::putChunk(std::shared_ptr<Chunk> chunk) {
 	chunks[z * w + x] = chunk;
     chunk->uses++;
 	chunksCount++;
+    events->trigger(EVT_CHUNK_LOADED, chunk.get());
 	return true;
 }
 

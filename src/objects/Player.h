@@ -18,6 +18,8 @@ class PhysicsSolver;
 class ChunksMatrix;
 class Level;
 
+const std::string DEFAULT_PLAYER_NAME = "Player";
+
 struct PlayerInput {
     bool zoom;
     bool cameraMode;
@@ -38,6 +40,7 @@ class Player : public Object, public Serializable {
     int chosenSlot;
     glm::vec3 spawnpoint {};
     std::shared_ptr<Inventory> inventory;
+    std::string name;
 public:
     std::shared_ptr<Camera> camera, spCamera, tpCamera;
     std::shared_ptr<Camera> currentCamera;
@@ -52,7 +55,7 @@ public:
 
     glm::vec2 cam = {};
 
-    Player(Level* level, glm::vec3 position, float speed, std::shared_ptr<Inventory> inv, const EngineSettings& settings);
+    Player(Level* level, const std::string& name, glm::vec3 position, float speed, std::shared_ptr<Inventory> inv, const EngineSettings& settings);
     ~Player();
 
     void teleport(glm::vec3 position);
@@ -78,6 +81,10 @@ public:
 
     inline int getId() const {
         return objectUID;
+    }
+
+    inline const std::string& getName() const {
+        return name;
     }
 };
 

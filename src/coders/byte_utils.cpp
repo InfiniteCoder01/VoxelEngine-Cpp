@@ -8,7 +8,7 @@ void ByteBuilder::put(ubyte b) {
     buffer.push_back(b);
 }
 
-void ByteBuilder::putCStr(const char* str) {
+void ByteBuilder::putCStr(const char* const str) {
     size_t size = strlen(str)+1;
     buffer.reserve(buffer.size() + size);
     for (size_t i = 0; i < size; i++) {
@@ -22,7 +22,7 @@ void ByteBuilder::put(const std::string& s) {
     put(reinterpret_cast<const ubyte*>(s.data()), len);
 }
 
-void ByteBuilder::put(const ubyte* arr, size_t size) {
+void ByteBuilder::put(const ubyte* const arr, size_t size) {
     buffer.reserve(buffer.size() + size);
     for (size_t i = 0; i < size; i++) {
         buffer.push_back(arr[i]);

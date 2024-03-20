@@ -12,7 +12,7 @@ public:
     /* Write one byte (8 bit unsigned integer) */
     void put(ubyte b);
     /* Write c-string (bytes array terminated with '\00') */
-    void putCStr(const char* str);
+    void putCStr(const char* const str);
     /* Write signed 16 bit integer */
     void putInt16(int16_t val);
     /* Write signed 32 bit integer */
@@ -27,7 +27,7 @@ public:
     /* Write string (uint32 length + bytes) */
     void put(const std::string& s);
     /* Write sequence of bytes without any header */
-    void put(const ubyte* arr, size_t size);
+    void put(const ubyte* const arr, size_t size);
 
     void set(size_t position, ubyte val);
     void setInt16(size_t position, int16_t val);

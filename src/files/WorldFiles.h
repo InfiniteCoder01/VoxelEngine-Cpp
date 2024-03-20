@@ -112,7 +112,7 @@ class WorldFiles {
 public:
     static bool parseRegionFilename(const std::string& name, int& x, int& y);
     fs::path getRegionsFolder() const;
-    fs::path getPlayerFile() const;
+    fs::path getPlayerFile(const std::string& name = "") const;
 
     regionsmap regions;
     regionsmap storages;
@@ -140,6 +140,9 @@ public:
     bool readWorldInfo(World* world);
 
     void writeRegion(int x, int y, WorldRegion* entry, fs::path file, int layer);
+
+    void readPlayer(Player* player, const std::string& name);
+    void writePlayer(Player* player);
 
     /// @brief Write all unsaved data to world files
     /// @param world target world

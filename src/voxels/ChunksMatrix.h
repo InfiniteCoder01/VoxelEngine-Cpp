@@ -36,7 +36,7 @@ public:
     std::unique_ptr<LevelEvents> events;
 
 	ChunksMatrix(Level* level, uint32_t w, uint32_t d, int32_t ox, int32_t oz, const EngineSettings& settings);
-	~ChunksMatrix() = default;
+	~ChunksMatrix();
 
 	bool putChunk(std::shared_ptr<Chunk> chunk);
 

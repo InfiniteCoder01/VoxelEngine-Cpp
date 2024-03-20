@@ -62,6 +62,8 @@ public:
         std::shared_ptr<T> object = std::dynamic_pointer_cast<T>(objects[id]);
         return object; 
     }
+
+    void removeObject(uint64_t id);
 };
 
 #endif /* WORLD_LEVEL_H_ */

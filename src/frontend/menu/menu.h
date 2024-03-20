@@ -14,6 +14,7 @@ namespace gui {
 
 class Engine;
 class LevelController;
+class Level;
 
 using packconsumer = std::function<void(const ContentPack& pack)>;
 
@@ -27,8 +28,11 @@ namespace menus {
     // implemented in menu_create_world.cpp
     extern void create_world_generators_panel(Engine* engine);
 
+    // implemented in menu_join_server.cpp
+    extern void create_join_server_panel(Engine* engine);
+
     // implemented in menu_pause.cpp
-    extern void create_pause_panel(Engine* engine, LevelController* controller);
+    extern void create_pause_panel(Engine* engine, LevelController* controller, Level* level);
     extern std::shared_ptr<gui::Panel> create_packs_panel(
         const std::vector<ContentPack>& packs, 
         Engine* engine, 

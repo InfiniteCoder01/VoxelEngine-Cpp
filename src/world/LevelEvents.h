@@ -8,6 +8,7 @@
 class Chunk;
 
 enum lvl_event_type {
+    EVT_CHUNK_LOADED,
 	EVT_CHUNK_HIDDEN,
 };
 

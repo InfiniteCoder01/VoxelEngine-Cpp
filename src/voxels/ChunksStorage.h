@@ -34,7 +34,7 @@ public:
 	std::shared_ptr<Chunk> create(int32_t x, int32_t z);
 	void getVoxels(VoxelsVolume* volume, bool backlight=false) const;
 	void save();
-    void unloadUnused();
+    void unloadUnused(uint64_t maxDuration);
 
     inline ChunkMap::iterator begin() { return chunksMap.begin(); }
     inline ChunkMap::iterator end() { return chunksMap.end(); }

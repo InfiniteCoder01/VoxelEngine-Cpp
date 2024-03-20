@@ -276,8 +276,9 @@ bool WorldFiles::parseRegionFilename(const std::string& name, int& x, int& z) {
     return true;
 }
 
-fs::path WorldFiles::getPlayerFile() const {
-    return directory/fs::path("player.json");
+fs::path WorldFiles::getPlayerFile(const std::string& name) const {
+    if (name.empty()) return directory/fs::path("player.json");
+    return directory/fs::path("players")/fs::path(name + ".json");
 }
 
 fs::path WorldFiles::getWorldFile() const {
@@ -473,6 +474,41 @@ void WorldFiles::writeRegion(int x, int z, WorldRegion* entry, fs::path folder, 
         dataio::write_int32_big(offsets[i], (ubyte*)intbuf, 0);
         file.write(intbuf, 4);
     }
+}
+
+void WorldFiles::readPlayer(Player* player, const std::string& name) {
+    fs::path file = getPlayerFile(name);
+    if (fs::is_regular_file(file)) {
+        auto playerFile = files::read_json(file);
+        player->deserialize(playerFile.get());
+        return;
+    }
+
+    file = getPlayerFile();
+    if (!fs::is_regular_file(file)) {
+        std::cerr << "warning: no player file exist" << std::endl;
+    } else {
+        auto playerFile = files::read_json(file);
+        if (playerFile->has("players")) {
+            auto players = playerFile->list("players");
+            for (size_t i = 0; i < players->size(); i++) {
+                auto src = players->map(i);
+                if (!src->has("name") || src->getStr("name") == name) {
+                    player->deserialize(src);
+                    break;
+                }
+            }
+        } else {
+            player->deserialize(playerFile.get());
+        }
+    }
+}
+
+void WorldFiles::writePlayer(Player* player) {
+    auto data = player->serialize();
+    auto file = getPlayerFile(player->getName());
+    fs::create_directories(file.parent_path());
+    files::write_json(file, data.get());
 }
 
 void WorldFiles::writeRegions(regionsmap& regions, const fs::path& folder, int layer) {

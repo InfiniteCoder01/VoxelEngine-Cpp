@@ -7,6 +7,8 @@
 #include "PlayerController.h"
 #include "BlocksController.h"
 #include "ChunksController.h"
+#include "ServerController.h"
+#include "ClientController.h"
 
 class Level;
 class Player;
@@ -19,6 +21,9 @@ class LevelController {
     std::unique_ptr<BlocksController> blocks;
     std::unique_ptr<PlayerController> player;
 public:
+    std::unique_ptr<ServerController> server = nullptr;
+    std::unique_ptr<ClientController> client = nullptr;
+
     LevelController(EngineSettings& settings, Level* level);
 
     /// @param delta time elapsed since the last update

@@ -131,7 +131,7 @@ void LevelScreen::updateHotkeys() {
     }
     if (Events::jpressed(keycode::F5)) {
         controller->getPlayer()->chunksMatrix->clear();
-        controller->getLevel()->chunksStorage->unloadUnused();
+        controller->getLevel()->chunksStorage->unloadUnused(UINT64_MAX);
     }
 }
 
@@ -163,7 +163,7 @@ void LevelScreen::update(float delta) {
     controller->getPlayer()->camera->setFov(glm::radians(settings.camera.fov));
     if (settings.graphics.backlight != backlight) {
         controller->getPlayer()->chunksMatrix->clear();
-        controller->getLevel()->chunksStorage->unloadUnused();
+        controller->getLevel()->chunksStorage->unloadUnused(UINT64_MAX);
         backlight = settings.graphics.backlight;
     }
 

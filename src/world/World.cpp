@@ -33,7 +33,8 @@ World::World(
     content(content),
     packs(packs) 
 {
-    wfile = std::make_unique<WorldFiles>(directory, settings.debug);
+    if (directory.empty()) wfile = nullptr;
+    else wfile = std::make_unique<WorldFiles>(directory, settings.debug);
 }
 
 World::~World(){
@@ -59,16 +60,11 @@ void World::write(Level* level) {
     }
 
     wfile->write(this, content);
-	auto playerFile = dynamic::Map();
-    {
-        auto& players = playerFile.putList("players");
-        for (auto object : level->objects) {
-            if (std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(object)) {
-                players.put(player->serialize().release());
-            }
+    for (auto object : level->objects) {
+        if (std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(object)) {
+            wfile->writePlayer(player.get());
         }
     }
-    files::write_json(wfile->getPlayerFile(), &playerFile);
 }
 
 Level* World::create(std::string name, 
@@ -98,33 +94,7 @@ Level* World::load(fs::path directory,
     }
 
     auto level = new Level(world.get(), content, settings);
-    {
-        fs::path file = wfile->getPlayerFile();
-        if (!fs::is_regular_file(file)) {
-            std::cerr << "warning: player.json does not exists" << std::endl;
-        } else {
-            auto playerFile = files::read_json(file);
-            if (playerFile->has("players")) {
-                level->objects.clear();
-                auto players = playerFile->list("players");
-                for (size_t i = 0; i < players->size(); i++) {
-                    auto player = level->spawnObject<Player>(level, glm::vec3(0, DEF_PLAYER_Y, 0), DEF_PLAYER_SPEED, level->inventories->create(DEF_PLAYER_INVENTORY_SIZE), settings);
-                    player->deserialize(players->map(i));
-                    level->inventories->store(player->getInventory());
-                }
-                // TODO: Player name
-                // auto it = std::find_if(level->objects.begin(), level->objects.end(), [settings](const std::shared_ptr<Object>& object) {
-                //     auto player = std::dynamic_pointer_cast<Player>(object);
-                //     return player && player->name == settings.name;
-                // });
-                // std::rotate(level->objects.begin(), it, it + 1);
-            } else {
-	            auto player = level->getObject<Player>(0);
-                player->deserialize(playerFile.get());
-                level->inventories->store(player->getInventory());
-            }
-        }
-    }
+    wfile->readPlayer(level->getObject<Player>(0).get(), DEFAULT_PLAYER_NAME);
     (void)world.release();
     return level;
 }

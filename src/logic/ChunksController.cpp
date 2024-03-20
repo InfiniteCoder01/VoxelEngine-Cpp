@@ -80,6 +80,8 @@ bool ChunksController::loadVisible(){
 		return false;
 	}
 
+    if (!level->world->wfile) return false;
+
     const int ox = chunks->ox;
 	const int oz = chunks->oz;
 	createChunk(nearX+ox, nearZ+oz);

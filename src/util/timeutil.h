@@ -9,7 +9,8 @@ namespace timeutil {
         std::chrono::high_resolution_clock::time_point start;
     public:
         Timer();
-        int64_t stop();
+        uint64_t stop();
+        void reset();
     };
 
     /** 
