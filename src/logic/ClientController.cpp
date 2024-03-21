@@ -53,10 +53,10 @@ ClientController::ClientController(Engine* engine, const std::string& addr, cons
         player = level->getObject<Player>(0).get();
 
         if (enet_host_service(client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_RECEIVE) {
-           checkHandshake(event.packet, [&] (auto type, auto& reader) {
+           checkHandshake(event.packet, [&] (auto type, auto& reader, auto version) {
                 if (type == MessageType::WorldInfo) {
                     deserializeDateTime(reader, level);
-                    player->hitbox->position = glm::vec3(reader.getFloat32(), reader.getFloat32(), reader.getFloat32());
+                    player->hitbox->position = deserializeVec3(reader);
                 } else {
                     throw langs::get(L"error.could-not-load-from-server");
                 }
@@ -87,14 +87,21 @@ void ClientController::update() {
     ENetEvent event;
     while (enet_host_service(client, &event, 0) > 0) {
         if (event.type == ENET_EVENT_TYPE_RECEIVE) {
-            checkHandshake(event.packet, [&] (auto type, auto& reader) {
+            checkHandshake(event.packet, [&] (auto type, auto& reader, auto version) {
                 if (type == MessageType::Sync) {
                     deserializeDateTime(reader, level);
                 } else if (type == MessageType::Chunk) {
                     auto x = reader.getInt32();
                     auto z = reader.getInt32();
-                    auto chunk = std::make_shared<Chunk>(x, z);
-                    level->chunksStorage->store(chunk);
+                    Chunk* chunk = level->chunksStorage->getChunk(x, z);
+                    if (!chunk) {
+                        auto newChunk = std::make_shared<Chunk>(x, z);
+                        level->chunksStorage->store(newChunk);
+                        player->chunksMatrix->putChunk(newChunk);
+                        chunk = newChunk.get();
+                    } else {
+                        chunk->setModified(true);
+                    }
 
                     {
                         auto data = decompress(reader, CHUNK_DATA_LEN);
@@ -114,12 +121,11 @@ void ClientController::update() {
                         chunk->setLoadedLights(true);
                     }
 
-                    player->chunksMatrix->putChunk(chunk);
                     chunk->updateHeights();
 
                     if (!chunk->isLoadedLights()) {
                         Lighting::prebuildSkyLight(
-                            chunk.get(), level->content->getIndices()
+                            chunk, level->content->getIndices()
                         );
                     }
                     chunk->setReady(true);
@@ -128,4 +134,9 @@ void ClientController::update() {
             enet_packet_destroy(event.packet);
         }
     }
+
+    ByteBuilder builder = handshake(MessageType::ObjectMove);
+    builder.putInt64(player->getId());
+    serializeVec3(builder, player->hitbox->position);
+    enet_host_broadcast(client, 0, pack(builder, 0));
 }

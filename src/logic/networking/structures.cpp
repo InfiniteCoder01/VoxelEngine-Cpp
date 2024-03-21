@@ -19,13 +19,20 @@ void serializeDateTime(ByteBuilder& builder, Level* level) {
     builder.putFloat64(level->world->totalTime);
 }
 
+void serializeVec3(ByteBuilder& builder, glm::vec3 vec) {
+    builder.putFloat32(vec.x);
+    builder.putFloat32(vec.y);
+    builder.putFloat32(vec.z);
+}
+
 // * Deserialize Part
 
-void checkHandshake(ENetPacket* packet, std::function<void(MessageType, ByteReader&)> f) {
+void checkHandshake(ENetPacket* packet, std::function<void(MessageType, ByteReader&, uint32_t)> f) {
     ByteReader reader(packet->data, packet->dataLength);
+    uint32_t version;
     try {
         reader.checkMagic(HANDSHAKE_MAGIC, strlen(HANDSHAKE_MAGIC));
-        uint32_t version = reader.getInt32();
+        version = reader.getInt32();
         if (version < 1 || version > HANDSHAKE_VERSION) throw std::runtime_error("Invalid handshake version");
     } catch (const std::runtime_error& error) {
         std::cerr << error.what() << std::endl;
@@ -33,7 +40,7 @@ void checkHandshake(ENetPacket* packet, std::function<void(MessageType, ByteRead
     }
     try {
         MessageType type = (MessageType)reader.getInt16();
-        f(type, reader);
+        f(type, reader, version);
     } catch (const std::runtime_error& error) {
         std::cerr << error.what() << std::endl;
         throw langs::get(L"error.could-not-load-from-server");
@@ -44,6 +51,14 @@ void deserializeDateTime(ByteReader& reader, Level* level) {
     level->world->daytime = reader.getFloat32();
     level->world->daytimeSpeed = reader.getFloat32();
     level->world->totalTime = reader.getFloat64();
+}
+
+glm::vec3 deserializeVec3(ByteReader& reader) {
+    glm::vec3 vec;
+    vec.x = reader.getFloat32();
+    vec.y = reader.getFloat32();
+    vec.z = reader.getFloat32();
+    return vec;
 }
 
 ENetPacket* pack(const ByteBuilder& builder, enet_uint32 flags) {

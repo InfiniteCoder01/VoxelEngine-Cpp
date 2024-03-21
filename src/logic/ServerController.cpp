@@ -52,7 +52,9 @@ void ServerController::update() {
     while (enet_host_service(server, &event, 0) > 0) {
         if (event.type == ENET_EVENT_TYPE_RECEIVE) {
             try {
-               checkHandshake(event.packet, [&] (auto type, auto& reader) {
+               checkHandshake(event.packet, [&] (auto type, auto& reader, auto version) {
+                    auto peer = event.peer;
+                    Player* player = (Player*)peer->data;
                     if (type == MessageType::Join) {
                         std::string name = reader.getString();
                         std::shared_ptr<Player> player = nullptr;
@@ -71,7 +73,6 @@ void ServerController::update() {
                         }
 
                         std::cout << name << " joined the game!" << std::endl;
-                        auto peer = event.peer;
                         peer->data = player.get();
 
                         player->radius = reader.getInt32();
@@ -94,8 +95,12 @@ void ServerController::update() {
                         builder.putFloat32(player->hitbox->position.z);
                         enet_peer_send(peer, 0, pack(builder, ENET_PACKET_FLAG_RELIABLE));
                     } else if (type == MessageType::Leave) {
-                        disconnect(event.peer);
-                        enet_peer_reset(event.peer);
+                        disconnect(peer);
+                        enet_peer_reset(peer);
+                    } else if (type == MessageType::ObjectMove) {
+                        uint64_t id = reader.getInt64();
+                        // if (id != player->getId()) return;
+                        player->hitbox->position = deserializeVec3(reader);
                     }
                 });
             } catch (...) {}
