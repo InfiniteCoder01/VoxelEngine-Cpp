@@ -64,6 +64,8 @@ ClientController::ClientController(Engine* engine, const std::string& addr, cons
 }
 
 ClientController::~ClientController() {
+    enet_peer_send(peer, 0, pack(handshake(MessageType::Leave), ENET_PACKET_FLAG_RELIABLE));
+    enet_host_flush(client);
     enet_peer_reset(peer);
     enet_host_destroy(client);
 }

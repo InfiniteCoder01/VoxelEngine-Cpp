@@ -5,11 +5,13 @@
 #include <functional>
 
 enum class MessageType : uint16_t {
-    // Client requests to join the server
+    /// @brief Client requests to join the server
     Join,
-    // Sent in response to Join. Contains the initial world information (time, player position, etc.)
+    /// @brief Client leaves the server. Useful, because server detects disconnection after like 20 seconds
+    Leave,
+    /// @brief Sent in response to Join. Contains the initial world information (time, player position, etc.)
     WorldInfo,
-    // Sync with the server from time to time (sent every second)
+    /// @brief Sync with the server from time to time (sent every second)
     Sync,
 };
 

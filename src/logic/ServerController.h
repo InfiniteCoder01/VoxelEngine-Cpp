@@ -11,6 +11,8 @@ class ServerController {
 
     Level* level;
     const EngineSettings& settings;
+
+    void disconnect(ENetPeer* peer);
 public:
     ServerController(Level* level);
     ~ServerController();

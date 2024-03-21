@@ -25,6 +25,14 @@ ServerController::~ServerController() {
     enet_host_destroy(server);
 }
 
+void ServerController::disconnect(ENetPeer* peer) {
+    auto player = (Player*)peer->data;
+    level->world->wfile->writePlayer(player);
+    std::cout << player->getName() << " left the game!" << std::endl;
+    level->removeObject(player->getId());
+    peer->data = nullptr;
+}
+
 void ServerController::update() {
     ENetEvent event;
     while (enet_host_service(server, &event, 0) > 0) {
@@ -60,15 +68,15 @@ void ServerController::update() {
                         builder.putFloat32(player->hitbox->position.y);
                         builder.putFloat32(player->hitbox->position.z);
                         enet_peer_send(event.peer, 0, pack(builder, ENET_PACKET_FLAG_RELIABLE));
+                    } else if (type == MessageType::Leave) {
+                        disconnect(event.peer);
+                        enet_peer_reset(event.peer);
                     }
                 });
             } catch (...) {}
             enet_packet_destroy(event.packet);
         } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
-            auto player = (Player*)event.peer->data;
-            level->world->wfile->writePlayer(player);
-            std::cout << player->getName() << " left the game!" << std::endl;
-            level->removeObject(player->getId());
+            disconnect(event.peer);
         }
     }
 
