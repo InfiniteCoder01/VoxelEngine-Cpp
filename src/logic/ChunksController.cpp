@@ -89,14 +89,14 @@ bool ChunksController::loadVisible(){
 }
 
 bool ChunksController::buildLights(std::shared_ptr<Chunk> chunk) {
-    int surrounding = 0;
+    uint32_t surrounding = 0;
     for (int oz = -1; oz <= 1; oz++){
         for (int ox = -1; ox <= 1; ox++){
             if (chunksStorage->getChunk(chunk->x+ox, chunk->z+oz))
                 surrounding++;
         }
     }
-    if (surrounding == MIN_SURROUNDING) {
+    if (surrounding >= MIN_SURROUNDING) {
         bool lightsCache = chunk->isLoadedLights();
         if (!lightsCache) {
             level->lighting->buildSkyLight(chunk->x, chunk->z);

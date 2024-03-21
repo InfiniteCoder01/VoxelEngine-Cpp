@@ -99,7 +99,7 @@ WorldFiles::WorldFiles(fs::path directory, const DebugSettings& settings)
     generatorTestMode(settings.generatorTestMode),
     doWriteLights(settings.doWriteLights) 
 {
-    compressionBuffer = std::make_unique<ubyte[]>(CHUNK_DATA_LEN * 2);
+    compressionBuffer = std::make_unique<ubyte[]>(std::max(CHUNK_DATA_LEN, LIGHTMAP_DATA_LEN) * 2);
 }
 
 WorldFiles::~WorldFiles() {

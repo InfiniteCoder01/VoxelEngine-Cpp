@@ -13,6 +13,8 @@ enum class MessageType : uint16_t {
     WorldInfo,
     /// @brief Sync with the server from time to time (sent every second)
     Sync,
+    /// @brief Chunk data
+    Chunk,
 };
 
 ByteBuilder handshake(MessageType type);

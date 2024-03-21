@@ -134,11 +134,11 @@ void Player::updateInput(
 }
 
 void Player::loadChunks() {
-	chunksMatrix->setCenter(hitbox->position.x, hitbox->position.z);
     uint32_t diameter = (std::min(radius, settings.chunks.loadDistance) + chunksMatrix->getPadding()) * 2;
 	if (chunksMatrix->w != diameter) {
 		chunksMatrix->resize(diameter, diameter);
 	}
+	chunksMatrix->setCenter(hitbox->position.x, hitbox->position.z);
     chunksMatrix->update();
 }
 

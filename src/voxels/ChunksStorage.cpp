@@ -47,6 +47,11 @@ static void verifyLoadedChunk(ContentIndices* indices, Chunk& chunk) {
 }
 
 std::shared_ptr<Chunk> ChunksStorage::create(int32_t x, int32_t z) {
+    {
+        auto it = chunksMap.find(glm::ivec2(x, z));
+        if (it != chunksMap.end()) return it->second;
+    }
+
     WorldFiles* wfile = level->world->wfile.get();
 
     auto chunk = std::make_shared<Chunk>(x, z);
@@ -160,7 +165,7 @@ void ChunksStorage::unloadUnused(uint64_t maxDuration) {
 	for (auto it = begin(); it != end();) {
 		timeutil::Timer timer;
 		if (it->second->uses == 0) {
-            level->world->wfile->put(it->second.get());
+            if (level->world->wfile) level->world->wfile->put(it->second.get());
 			events->trigger(EVT_CHUNK_HIDDEN, it->second.get());
             it = chunksMap.erase(it);
 		} else it++;

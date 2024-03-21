@@ -27,13 +27,15 @@ void checkHandshake(ENetPacket* packet, std::function<void(MessageType, ByteRead
         reader.checkMagic(HANDSHAKE_MAGIC, strlen(HANDSHAKE_MAGIC));
         uint32_t version = reader.getInt32();
         if (version < 1 || version > HANDSHAKE_VERSION) throw std::runtime_error("Invalid handshake version");
-    } catch (const std::runtime_error& _error) {
+    } catch (const std::runtime_error& error) {
+        std::cerr << error.what() << std::endl;
         throw langs::get(L"error.unsupported-server");
     }
     try {
         MessageType type = (MessageType)reader.getInt16();
         f(type, reader);
-    } catch (const std::runtime_error& _error) {
+    } catch (const std::runtime_error& error) {
+        std::cerr << error.what() << std::endl;
         throw langs::get(L"error.could-not-load-from-server");
     }
 }

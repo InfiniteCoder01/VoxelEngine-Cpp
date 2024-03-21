@@ -2,7 +2,11 @@
 #include "networking/settings.h"
 #include "networking/structures.h"
 #include "../world/World.h"
+#include "../voxels/Chunk.h"
+#include "../voxels/ChunksMatrix.h"
+#include "../world/LevelEvents.h"
 #include "../files/WorldFiles.h"
+#include "../files/rle.h"
 #include "../objects/Player.h"
 #include "../physics/Hitbox.h"
 #include "../items/Inventories.h"
@@ -12,6 +16,8 @@
 ServerController::ServerController(Level* level)
     : level(level),
       settings(level->settings) {
+    compressionBuffer = std::make_unique<ubyte[]>(std::max(CHUNK_DATA_LEN, LIGHTMAP_DATA_LEN) * 2);
+
     address.host = ENET_HOST_ANY;
     address.port = 1234;
     server = enet_host_create(&address, MAX_CLIENTS, MAX_CHANNELS, SERVER_BANDWIDTH_IN, SERVER_BANDWIDTH_OUT);
@@ -31,6 +37,14 @@ void ServerController::disconnect(ENetPeer* peer) {
     std::cout << player->getName() << " left the game!" << std::endl;
     level->removeObject(player->getId());
     peer->data = nullptr;
+}
+
+void ServerController::compress(ByteBuilder& dst, const ubyte* const src, size_t srclen) {
+    ubyte* buffer = this->compressionBuffer.get();
+    size_t len = extrle::encode(src, srclen, buffer);
+    dst.putInt64(len);
+    dst.put(buffer, len);
+    delete[] src;
 }
 
 void ServerController::update() {
@@ -57,17 +71,28 @@ void ServerController::update() {
                         }
 
                         std::cout << name << " joined the game!" << std::endl;
-                        event.peer->data = player.get();
+                        auto peer = event.peer;
+                        peer->data = player.get();
 
                         player->radius = reader.getInt32();
-                        // player->chunksMatrix->events;
+                        player->chunksMatrix->events->listen(EVT_CHUNK_LOADED, [this, peer] (lvl_event_type _, Chunk* chunk) {
+                            ByteBuilder builder = handshake(MessageType::Chunk);
+                            builder.putInt32(chunk->x);
+                            builder.putInt32(chunk->z);
+                            compress(builder, chunk->encode(), CHUNK_DATA_LEN);
+                            builder.put(chunk->isLighted());
+                            if (chunk->isLighted()) {
+                                compress(builder, chunk->lightmap.encode(), LIGHTMAP_DATA_LEN);
+                            }
+                            enet_peer_send(peer, 0, pack(builder, ENET_PACKET_FLAG_RELIABLE));
+                        });
 
                         ByteBuilder builder = handshake(MessageType::WorldInfo);
                         serializeDateTime(builder, level);
                         builder.putFloat32(player->hitbox->position.x);
                         builder.putFloat32(player->hitbox->position.y);
                         builder.putFloat32(player->hitbox->position.z);
-                        enet_peer_send(event.peer, 0, pack(builder, ENET_PACKET_FLAG_RELIABLE));
+                        enet_peer_send(peer, 0, pack(builder, ENET_PACKET_FLAG_RELIABLE));
                     } else if (type == MessageType::Leave) {
                         disconnect(event.peer);
                         enet_peer_reset(event.peer);

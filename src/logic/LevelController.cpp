@@ -16,7 +16,7 @@ LevelController::LevelController(EngineSettings& settings, Level* level)
 }
 
 void LevelController::update(float delta, bool input, bool pause) {
-    if (client) client->update();
+    if (server) server->update();
     player->getPlayer()->radius = settings.chunks.loadDistance;
     player->update(delta, input, pause);
     for(auto obj : level->objects) {
@@ -46,7 +46,7 @@ void LevelController::update(float delta, bool input, bool pause) {
         }
         blocks->update(delta);
     }
-    if (server) server->update();
+    if (client) client->update();
 }
 
 void LevelController::saveWorld() {
