@@ -114,6 +114,7 @@ LevelScreen::LevelScreen(Engine* engine, Level* level) : Screen(engine) {
 
 LevelScreen::~LevelScreen() {
     scripting::on_frontend_close();
+    controller->getPlayer()->chunksMatrix->clear();
     controller->onWorldQuit();
     engine->getPaths()->setWorldFolder(fs::path());
 }
